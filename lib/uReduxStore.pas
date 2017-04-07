@@ -6,39 +6,39 @@ uses System.Generics.Collections, System.SysUtils, System.Variants,
      System.Classes;
 
 type
-  TReducer = reference to function(State : Variant; Action : Integer):Variant;
-  TListener = reference to procedure(State : Variant);
+  TReducer<S> = reference to function(State : S; Action : Integer):S;
+  TListener<S> = reference to procedure(State : S);
 
-  TReduxStore = class(TObject)
+  TReduxStore<T> = class(TObject)
   private
-    FState : Variant;
-    FReducer : TReducer;
-    FListeners : TList<TListener>;
+    FState : T;
+    FReducer : TReducer<T>;
+    FListeners : TList<TListener<T>>;
   public
-    constructor Create(InitialState : Variant; Reducer : TReducer); reintroduce; overload;
+    constructor Create(InitialState : T; Reducer : TReducer<T>); reintroduce; overload;
     procedure DispatchAction(Action : Integer);
-    procedure AddListener(Listener:TListener);
-    function GetState: Variant;
+    procedure AddListener(Listener:TListener<T>);
+    function GetState: T;
   end;
 
 implementation
 
 { TReduxStore }
-procedure TReduxStore.AddListener(Listener: TListener);
+procedure TReduxStore<T>.AddListener(Listener: TListener<T>);
 begin
   FListeners.Add(Listener);
 end;
 
-constructor TReduxStore.Create(InitialState : Variant; Reducer : TReducer);
+constructor TReduxStore<T>.Create(InitialState : T; Reducer : TReducer<T>);
 begin
   FState := InitialState;
   FReducer := Reducer;
-  FListeners := TList<TListener>.Create;
+  FListeners := TList<TListener<T>>.Create;
 end;
 
-procedure TReduxStore.DispatchAction(Action: Integer);
+procedure TReduxStore<T>.DispatchAction(Action: Integer);
 var
-  Listener : TListener;
+  Listener : TListener<T>;
 begin
   FState := FReducer(FState,Action);
   for Listener in FListeners do
@@ -46,7 +46,7 @@ begin
 
 end;
 
-function TReduxStore.GetState: Variant;
+function TReduxStore<T>.GetState: T;
 begin
   Result := FState;
 end;
